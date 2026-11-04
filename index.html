@@ -99,13 +99,26 @@
   .term .bar span { margin-left: auto; font-size: 10px; color: var(--dim); }
   .term .ln { white-space: pre; overflow: hidden; }
   .term .ln:empty { display: none; }
+  .term-out { max-height: 40vh; overflow-y: auto; scrollbar-width: none; }
+  .term-out::-webkit-scrollbar { display: none; }
+  .term.cleared .sl { display: none; }
+  .term:focus-within .ln.cur::after { display: none; }
+  .term .ul { white-space: pre-wrap; }
+  .term .ul a { color: var(--gold); text-decoration: underline; text-underline-offset: 3px; }
+  .term .ul.err { color: #ff8a7a; }
+  .prompt { display: flex; gap: 8px; align-items: center; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); cursor: text; }
+  .prompt span { color: var(--gold); }
+  .prompt input { flex: 1; min-width: 0; background: none; border: 0; outline: 0; color: var(--fg); font: inherit; caret-color: var(--gold); }
+  .prompt input::placeholder { color: var(--dim); opacity: .7; }
   .term .c::before { content: "$ "; color: var(--gold); }
   .term .o { color: var(--dim); }
   .term .ln.cur::after { content: ""; display: inline-block; width: 7px; height: 1.1em; margin-left: 2px; vertical-align: -3px; background: var(--gold); animation: blink 1s steps(1) infinite; }
   @keyframes blink { 50% { opacity: 0; } }
   @media (max-width: 820px) {
     .term { top: 60px; left: var(--pad); right: auto; width: auto; min-width: 230px; font-size: 10.5px; padding: 9px 12px 10px; }
-    .term .ln:not(.act) { display: none; }
+    .term .sl:not(.act), .term.used .sl { display: none; }
+    .term-out { max-height: 24vh; }
+    .prompt input { font-size: 16px; } /* ≥16px stops iOS zooming on focus */
   }
 
   /* ---------- sections ---------- */
@@ -117,7 +130,7 @@
   .about-text .wd.lit { opacity: 1; }
   .about-text .wd.g { color: var(--gold); }
 
-  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin-top: 12vh; background: var(--line); border: 1px solid var(--line); }
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; margin-top: 12vh; background: var(--line); border: 1px solid var(--line); }
   @media (max-width: 820px) { .grid { grid-template-columns: 1fr; } }
   .cell {
     position: relative; background: var(--bg); padding: 32px 28px 36px; min-height: 220px; overflow: hidden;
@@ -190,12 +203,15 @@
         <canvas class="media" id="ascii" aria-hidden="true"></canvas>
       </div>
 
-      <div class="term" id="term" aria-hidden="true">
+      <div class="term" id="term">
         <div class="bar"><i></i><i></i><i></i><span>~/creestee</span></div>
-        <div class="ln c" data-t="-1">whoami</div><div class="ln o" data-t="-1">cristian mihailescu</div>
-        <div class="ln c" data-t=".24">cat pasiuni.txt</div><div class="ln o" data-t=".29">it · ai · automatizări</div>
-        <div class="ln c" data-t=".49">./build --fix-bugs</div><div class="ln o" data-t=".54">✓ compilat în 0.42s</div>
-        <div class="ln c" data-t=".74">open socials</div><div class="ln o" data-t=".79">5 linkuri găsite ↓</div>
+        <div class="term-out" id="tout">
+          <div class="ln sl c" data-t="-1">whoami</div><div class="ln sl o" data-t="-1">cristian mihailescu</div>
+          <div class="ln sl c" data-t=".24">cat pasiuni.txt</div><div class="ln sl o" data-t=".29">it · ai · car coding</div>
+          <div class="ln sl c" data-t=".49">./build --fix-bugs</div><div class="ln sl o" data-t=".54">✓ compilat în 0.42s</div>
+          <div class="ln sl c" data-t=".74">open socials</div><div class="ln sl o" data-t=".79">5 linkuri găsite ↓</div>
+        </div>
+        <label class="prompt"><span>$</span><input id="tin" aria-label="Terminal" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="scrie help"></label>
       </div>
 
       <div class="beat" data-from="0" data-to=".22"><span class="mono">@creestee</span><h1>Salut, sunt <em>Cristian.</em></h1></div>
@@ -211,17 +227,18 @@
   <!-- about -->
   <section class="block" id="despre">
     <div class="label mono"><span>Despre mine</span><span>(01)</span></div>
-    <p class="about-text" id="about">Sunt Cristian, un pasionat de *tehnologie* care nu se mulțumește să folosească lucrurile — vrea să înțeleagă cum *funcționează.* De la cod și aplicații la automatizări și gadgeturi, îmi place să transform idei în lucruri care *chiar merg.*</p>
+    <p class="about-text" id="about">Sunt Cristian, un pasionat de *tehnologie* care nu se mulțumește să folosească lucrurile — vrea să înțeleagă cum *funcționează.* De la cod și aplicații la automatizări, mașini și gadgeturi, îmi place să transform idei în lucruri care *chiar merg.*</p>
 
     <div class="grid">
       <div class="cell" style="--d:0s"><span class="mono n">01</span><h3>Software</h3><p>Aplicații, scripturi și site-uri. Îmi place să construiesc de la zero și să văd ideea prinzând viață.</p></div>
       <div class="cell" style="--d:.1s"><span class="mono n">02</span><h3>Automatizări</h3><p>Smart home și tot ce poate face computerul în locul meu. Dacă repet ceva de două ori, îl automatizez.</p></div>
       <div class="cell" style="--d:.2s"><span class="mono n">03</span><h3>AI &amp; gadgeturi</h3><p>Testez tot ce apare nou — de la inteligență artificială la hardware — și povestesc ce merită.</p></div>
+      <div class="cell" style="--d:.3s"><span class="mono n">04</span><h3>Car coding</h3><p>Cod pentru mașini: diagnoză, configurări și proiecte proprii — de la sisteme pentru hibride la descuiere din cod.</p></div>
     </div>
 
     <div class="ticker" aria-hidden="true"><div>
-      <span>Programare</span><span>·</span><span>Inteligență artificială</span><span>·</span><span>Smart home</span><span>·</span><span>Aplicații mobile</span><span>·</span><span>Hardware</span><span>·</span><span>Web</span><span>·</span>
-      <span>Programare</span><span>·</span><span>Inteligență artificială</span><span>·</span><span>Smart home</span><span>·</span><span>Aplicații mobile</span><span>·</span><span>Hardware</span><span>·</span><span>Web</span><span>·</span>
+      <span>Programare</span><span>·</span><span>Inteligență artificială</span><span>·</span><span>Smart home</span><span>·</span><span>Aplicații mobile</span><span>·</span><span>Car coding</span><span>·</span><span>Hardware</span><span>·</span><span>Web</span><span>·</span>
+      <span>Programare</span><span>·</span><span>Inteligență artificială</span><span>·</span><span>Smart home</span><span>·</span><span>Aplicații mobile</span><span>·</span><span>Car coding</span><span>·</span><span>Hardware</span><span>·</span><span>Web</span><span>·</span>
     </div></div>
   </section>
 
@@ -285,27 +302,44 @@
     samp.canvas.width = cols; samp.canvas.height = rows;
   };
   sizeAscii(); addEventListener('resize', sizeAscii);
-  function drawAscii(a) {
+  // s = media scale → draw only inside the hover lens
+  const lens = { x: 0, y: 0, r: 0, R: 150, hover: false };
+  function drawAscii(a, s) {
     const vw = vid.videoWidth, vh = vid.videoHeight, ta = AW / AH;
     let sx = 0, sy = 0, sw = vw, sh = vh; // object-fit: cover crop
     if (vw / vh > ta) { sw = vh * ta; sx = (vw - sw) / 2; } else { sh = vw / ta; sy = (vh - sh) / 2; }
     samp.drawImage(vid, sx, sy, sw, sh, 0, 0, cols, rows);
     const px = samp.getImageData(0, 0, cols, rows).data;
-    const flick = .02 + Math.sin(a * Math.PI) * .35; // more glitch mid-transition
-    actx.fillStyle = '#0e0e10'; actx.fillRect(0, 0, AW, AH);
+    const flick = s ? .04 : .02 + Math.sin(a * Math.PI) * .35; // more glitch mid-transition
+    let y0 = 0, y1 = rows, lx, ly, lr;
+    actx.clearRect(0, 0, AW, AH);
+    actx.save();
+    if (s) {
+      const fr = frame.getBoundingClientRect();
+      lx = (lens.x - fr.left - AW / 2) / s + AW / 2; ly = (lens.y - fr.top - AH / 2) / s + AH / 2; lr = lens.r / s;
+      actx.beginPath(); actx.arc(lx, ly, lr, 0, 7); actx.clip();
+      y0 = Math.max(0, (ly - lr) / fs | 0); y1 = Math.min(rows, Math.ceil((ly + lr) / fs));
+    }
+    actx.fillStyle = s ? 'rgba(14,14,16,.7)' : '#0e0e10'; actx.fillRect(0, 0, AW, AH);
     actx.font = `${fs}px "JetBrains Mono", monospace`; actx.textBaseline = 'top'; actx.fillStyle = '#d6b273';
-    for (let y = 0; y < rows; y++) {
-      let s = '';
+    for (let y = y0; y < y1; y++) {
+      let line = '';
       for (let x = 0; x < cols; x++) {
         const i = (y * cols + x) * 4, b = (px[i] * .299 + px[i + 1] * .587 + px[i + 2] * .114) / 255;
-        s += Math.random() < flick ? ramp[Math.random() * ramp.length | 0] : ramp[b * (ramp.length - 1) | 0];
+        line += Math.random() < flick ? ramp[Math.random() * ramp.length | 0] : ramp[b * (ramp.length - 1) | 0];
       }
-      actx.fillText(s, 0, y * fs);
+      actx.fillText(line, 0, y * fs);
     }
+    actx.restore();
+    if (s) { actx.strokeStyle = 'rgba(214,178,115,.6)'; actx.beginPath(); actx.arc(lx, ly, lr, 0, 7); actx.stroke(); }
+  }
+  if (fine && !reduce) {
+    addEventListener('pointermove', e => { lens.x = e.clientX; lens.y = e.clientY; lens.hover = !e.target.closest?.('.term, header'); });
+    document.addEventListener('mouseleave', () => lens.hover = false);
   }
 
   // ---- terminal typed by scroll ----
-  const tlines = [...document.querySelectorAll('#term .ln')].map(el => ({ el, full: el.textContent, t: +el.dataset.t, n: -1 }));
+  const tlines = [...document.querySelectorAll('#term .sl')].map(el => ({ el, full: el.textContent, t: +el.dataset.t, n: -1 }));
   tlines.forEach(l => l.el.textContent = '');
   function typeTerm(p) {
     let last = null, act = 0;
@@ -345,8 +379,12 @@
 
     typeTerm(reduce ? 1 : p);
     const a = reduce || !ready ? 0 : 1 - clamp((p - .03) / .22);
-    asc.style.opacity = a;
-    if (a > .01) drawAscii(a);
+    const fr = frame.getBoundingClientRect();
+    const inLens = lens.hover && ready && a < .5 && lens.y > fr.top && lens.y < fr.bottom;
+    lens.r += ((inLens ? lens.R : 0) - lens.r) * .15;
+    if (a > .01) { asc.style.opacity = a; drawAscii(a); }
+    else if (lens.r > 2) { asc.style.opacity = 1; drawAscii(0, 1.15 - p * .15); }
+    else asc.style.opacity = 0;
 
     if (ready && vid.duration) {
       // ease toward target time so scrubbing feels smooth
@@ -362,6 +400,100 @@
     requestAnimationFrame(frameLoop);
   }
   frameLoop();
+
+  // ---- smooth scroll with inertia (desktop mouse/trackpad only) ----
+  let smoothTo = y => scrollTo({ top: y, behavior: reduce ? 'auto' : 'smooth' });
+  if (fine && !reduce) {
+    let target = scrollY, cur = scrollY, driving = false;
+    const max = () => document.documentElement.scrollHeight - innerHeight;
+    addEventListener('wheel', e => {
+      if (e.ctrlKey) return; // pinch-zoom
+      const to = e.target.closest?.('.term-out');
+      if (to && to.scrollHeight > to.clientHeight) return; // let the terminal scroll itself
+      e.preventDefault();
+      if (!driving) cur = target = scrollY;
+      target = clamp(target + e.deltaY * (e.deltaMode === 1 ? 16 : 1), 0, max());
+      driving = true;
+    }, { passive: false });
+    addEventListener('scroll', () => { if (!driving) target = cur = scrollY; }); // keyboard, scrollbar
+    (function smooth() {
+      if (driving) {
+        cur += (target - cur) * .1;
+        if (Math.abs(target - cur) < .5) { cur = target; driving = false; }
+        scrollTo(0, cur);
+      }
+      requestAnimationFrame(smooth);
+    })();
+    smoothTo = y => { cur = scrollY; target = clamp(y, 0, max()); driving = true; };
+  }
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a) return;
+    e.preventDefault();
+    const el = document.getElementById(a.getAttribute('href').slice(1));
+    smoothTo(el ? el.getBoundingClientRect().top + scrollY : 0);
+  });
+
+  // ---- interactive terminal ----
+  const term = document.getElementById('term'), tout = document.getElementById('tout'), tin = document.getElementById('tin');
+  const socials = [
+    ['instagram', 'https://instagram.com/cristiannmih'], ['tiktok', 'https://tiktok.com/@cristiannmih'],
+    ['snapchat', 'https://www.snapchat.com/add/cristianmih'], ['facebook', 'https://www.facebook.com/cristian.mihailescu2'],
+    ['revolut', 'https://revolut.me/creestee'],
+  ];
+  const out = (content, cls = 'o') => {
+    const d = document.createElement('div');
+    d.className = 'ln ul ' + cls;
+    d.append(content); // strings become text nodes — user input is never parsed as HTML
+    tout.append(d);
+  };
+  const link = (label, href) => {
+    const a = document.createElement('a');
+    a.href = href; a.textContent = label;
+    if (href.startsWith('http')) { a.target = '_blank'; a.rel = 'noopener'; }
+    return a;
+  };
+  const go = id => smoothTo(document.getElementById(id).getBoundingClientRect().top + scrollY);
+  const cmds = {
+    help: () => out('comenzi: whoami, about, skills, socials, contact, ls, cat, cd, date, echo, clear'),
+    whoami: () => out('cristian mihailescu'),
+    about: () => out('pasionat de IT — cod, automatizări, AI, car coding și gadgeturi.'),
+    skills: () => out('software · automatizări · ai · car coding · smart home · web'),
+    socials: () => socials.forEach(([n, u]) => out(link(n + ' ↗', u))),
+    contact: () => out(link('scrie-mi pe instagram ↗', socials[0][1])),
+    ls: () => out('despre/  linkuri/  pasiuni.txt  despre.txt'),
+    cat: f => f === 'pasiuni.txt' ? cmds.skills() : f === 'despre.txt' ? cmds.about() : out(`cat: ${f || '?'}: fișier inexistent`, 'err'),
+    cd: d => /^despre/.test(d) ? (go('despre'), out('→ despre/')) : /^linkuri/.test(d) ? (go('linkuri'), out('→ linkuri/')) : out(`cd: ${d || '~'}: nu există`, 'err'),
+    date: () => out(new Date().toLocaleString('ro-RO', { timeZone: 'Europe/Bucharest' })),
+    echo: t => out(t),
+    clear: () => { tout.querySelectorAll('.ul').forEach(n => n.remove()); term.classList.add('cleared'); },
+    sudo: () => out('nice try 😏 permisiune refuzată', 'err'),
+    rm: () => out('frumos încercat. sistemul e protejat 🔒', 'err'),
+    exit: () => out('nu scapi așa ușor 🙂'),
+  };
+  cmds.links = cmds.socials; cmds.pasiuni = cmds.skills;
+  const hist = []; let hi = 0;
+  tin.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const line = tin.value.trim(); tin.value = '';
+      if (!line) return;
+      hist.push(line); hi = hist.length;
+      term.classList.add('used');
+      out(line, 'c');
+      const [c, ...rest] = line.split(/\s+/), f = cmds[c.toLowerCase()];
+      f ? f(rest.join(' ')) : out(`comandă necunoscută: ${c} — scrie help`, 'err');
+      tout.scrollTop = tout.scrollHeight;
+    } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      hi = clamp(hi + (e.key === 'ArrowUp' ? -1 : 1), 0, hist.length);
+      tin.value = hist[hi] || '';
+    } else if (e.key === 'Tab') {
+      e.preventDefault();
+      const m = Object.keys(cmds).filter(k => k.startsWith(tin.value.toLowerCase()));
+      if (m.length === 1) tin.value = m[0] + ' ';
+    }
+  });
+  term.addEventListener('click', e => { if (!e.target.closest('a')) tin.focus({ preventScroll: true }); });
 
   // ---- cards fade up when visible ----
   const io = new IntersectionObserver(es => es.forEach(e => e.isIntersecting && (e.target.classList.add('in'), io.unobserve(e.target))), { threshold: .25 });
