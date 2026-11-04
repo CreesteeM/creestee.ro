@@ -187,7 +187,9 @@
   .fob.beep .wave + .wave { animation-delay: .22s; }
   @keyframes wave { from { opacity: .9; scale: .5; } to { opacity: 0; scale: 3.2; } }
   .list .link { transition: opacity .8s var(--ease), translate .8s var(--ease); transition-delay: var(--ld, 0s); }
-  .list.locked .link { opacity: 0; translate: -28px 0; }
+  .list.locked .link { opacity: .35; }
+  .list.locked .link .name { color: var(--dim); }
+  .list.hidden .link { opacity: 0; translate: -28px 0; }
   .links-head em { font-style: normal; font-weight: 300; color: var(--gold); }
   .list { border-top: 1px solid var(--line); }
   .link {
@@ -650,18 +652,50 @@
   });
   term.addEventListener('click', e => { if (!e.target.closest('a')) tin.focus({ preventScroll: true }); });
 
-  // ---- links unlock with the key fob; signature draws itself ----
+  // ---- key fob: locks = link names get encrypted, unlocks = they decrypt letter by letter ----
   const fob = document.getElementById('fob'), fobTxt = fob.querySelector('.fob-txt'), list = document.querySelector('.list');
-  const unlockLinks = () => {
-    fob.classList.remove('beep'); void fob.offsetWidth; fob.classList.add('beep');
-    setTimeout(() => { fob.classList.add('open'); fobTxt.textContent = 'descuiat ✓'; list.classList.remove('locked'); }, 350);
+  const cipher = '01#$%&@*<>/=+?ABCDEF';
+  const rnd = () => cipher[Math.random() * cipher.length | 0];
+  const names = [...list.querySelectorAll('.link')].map(a => {
+    const el = a.querySelector('.name');
+    a.setAttribute('aria-label', el.textContent); // screen readers always get the real name
+    return { el, txt: el.textContent, raf: 0, to: 0 };
+  });
+  const morph = (n, decrypt, delay) => {
+    clearTimeout(n.to); cancelAnimationFrame(n.raf); // a new click overrides any pending animation
+    n.to = setTimeout(() => {
+    let f = 0; const L = n.txt.length;
+    (function run() {
+      const k = f / 2;
+      n.el.textContent = [...n.txt].map((c, i) => (decrypt ? i < k : i < L - k) ? c : rnd()).join('');
+      if (f++ < L * 2) n.raf = requestAnimationFrame(run);
+      else n.el.textContent = decrypt ? n.txt : [...n.txt].map(rnd).join('');
+    })();
+    }, delay);
   };
-  fob.addEventListener('click', () => { fob.classList.remove('open'); fobTxt.textContent = 'blocat'; setTimeout(unlockLinks, 300); });
-  if (reduce) { fob.classList.add('open'); fobTxt.textContent = 'descuiat ✓'; }
+  let locked = true;
+  const setLock = lock => {
+    locked = lock;
+    fob.classList.remove('beep'); void fob.offsetWidth; fob.classList.add('beep');
+    fob.classList.toggle('open', !lock);
+    fobTxt.textContent = lock ? 'blocat' : 'descuiat ✓';
+    fob.setAttribute('aria-label', lock ? 'Descuie linkurile' : 'Blochează linkurile');
+    fob.title = lock ? 'apasă ca să descui' : 'apasă ca să blochezi';
+    list.classList.toggle('locked', lock); list.inert = lock;
+    names.forEach((n, i) => morph(n, !lock, (lock ? 0 : 300) + i * 90));
+  };
+  fob.addEventListener('click', () => setLock(!locked));
+  if (reduce) setLock(false);
   else {
-    list.classList.add('locked');
-    list.querySelectorAll('.link').forEach((l, i) => l.style.setProperty('--ld', .5 + i * .08 + 's'));
-    new IntersectionObserver((es, o) => es.forEach(e => { if (e.isIntersecting) { unlockLinks(); o.disconnect(); } }), { threshold: .3 }).observe(list);
+    list.classList.add('hidden', 'locked'); list.inert = true;
+    names.forEach(n => n.el.textContent = [...n.txt].map(rnd).join(''));
+    list.querySelectorAll('.link').forEach((l, i) => l.style.setProperty('--ld', i * .07 + 's'));
+    new IntersectionObserver((es, o) => es.forEach(e => {
+      if (!e.isIntersecting) return;
+      o.disconnect();
+      list.classList.remove('hidden');          // encrypted rows slide in…
+      setTimeout(() => setLock(false), 700);    // …then the fob beeps and they decrypt
+    }), { threshold: .3 }).observe(list);
   }
   const sign = document.getElementById('sign');
   new IntersectionObserver((es, o) => es.forEach(e => { if (e.isIntersecting) { sign.classList.add('in'); o.disconnect(); } }), { threshold: .5 }).observe(sign);
