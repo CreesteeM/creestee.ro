@@ -73,8 +73,8 @@
 
   .beat {
     position: absolute; z-index: 2; left: var(--pad); right: var(--pad); bottom: 14vh;
-    opacity: var(--o, 0); translate: 0 calc((1 - var(--o, 0)) * 30px); filter: blur(calc((1 - var(--o, 0)) * 8px));
-    pointer-events: none; will-change: opacity, translate, filter;
+    opacity: var(--o, 0); translate: 0 calc((1 - var(--o, 0)) * 30px);
+    pointer-events: none; will-change: opacity, translate;
   }
   .beat .mono { color: var(--gold); margin-bottom: 14px; display: block; }
   .beat h1, .beat h2 { font-size: clamp(40px, 8vw, 112px); font-weight: 600; line-height: .95; letter-spacing: -.045em; max-width: 14ch; }
@@ -89,7 +89,7 @@
   .term {
     position: absolute; z-index: 3; top: 84px; right: var(--pad); width: min(340px, calc(100% - 2 * var(--pad)));
     font-family: "JetBrains Mono", monospace; font-size: 12px; line-height: 1.7;
-    background: rgba(14,14,16,.55); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    background: rgba(14,14,16,.82);
     border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px 14px;
     animation: termIn 1s .8s var(--ease) both;
   }
@@ -289,19 +289,40 @@
   addEventListener('touchstart', unlock, { passive: true });
 
   // ---- ASCII "decode": video starts as characters, resolves to real footage ----
+  // fillText with fresh strings every frame cost ~12ms (text shaping), so the 10 glyphs are
+  // rendered once into pixel masks and blitted straight into an ImageData (~1ms).
   const asc = document.getElementById('ascii'), actx = asc.getContext('2d');
   const samp = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
-  const ramp = ' .:-=+*#%@';
-  let cols, rows, fs, cw, AW, AH;
+  const ramp = ' .:-=+*#%@', N = ramp.length, BG = [14, 14, 16], GOLD = [214, 178, 115];
+  const lut = bgA => new Uint32Array(256).map((_, al) => { // glyph coverage → ABGR pixel
+    const f = al / 255, c = BG.map((b, i) => b + (GOLD[i] - b) * f | 0);
+    return ((255 * (bgA + (1 - bgA) * f) | 0) << 24) | (c[2] << 16) | (c[1] << 8) | c[0];
+  });
+  const lutSolid = lut(1), lutLens = lut(.7);
+  let cols, rows, cw, ch, AW, AH, PW, PH, D, img, buf, masks;
   const sizeAscii = () => {
-    const d = Math.min(2, devicePixelRatio || 1);
     AW = frame.clientWidth; AH = frame.clientHeight;
-    asc.width = AW * d; asc.height = AH * d; actx.setTransform(d, 0, 0, d, 0, 0);
-    fs = AW < 820 ? 8 : 11; cw = fs * .6;
-    cols = Math.ceil(AW / cw); rows = Math.ceil(AH / fs);
+    D = AW < 820 ? Math.min(2, devicePixelRatio || 1) : 1; // phones: 2x so glyphs stay crisp
+    PW = Math.round(AW * D); PH = Math.round(AH * D); asc.width = PW; asc.height = PH;
+    ch = Math.round((AW < 820 ? 8 : 11) * D); cw = Math.round(ch * .6);
+    cols = Math.floor(PW / cw); rows = Math.floor(PH / ch);
     samp.canvas.width = cols; samp.canvas.height = rows;
+    img = actx.createImageData(PW, PH); buf = new Uint32Array(img.data.buffer);
+    const g = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+    g.canvas.width = cw * N; g.canvas.height = ch;
+    g.font = `${ch}px "JetBrains Mono", monospace`; g.textBaseline = 'top'; g.fillStyle = '#fff';
+    [...ramp].forEach((c, k) => g.fillText(c, k * cw, 0));
+    const ad = g.getImageData(0, 0, cw * N, ch).data;
+    masks = [...ramp].map((_, k) => {
+      const m = [];
+      for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) {
+        const al = ad[(y * cw * N + k * cw + x) * 4 + 3];
+        if (al > 30) m.push(y * PW + x, al);
+      }
+      return m;
+    });
   };
-  sizeAscii(); addEventListener('resize', sizeAscii);
+  sizeAscii(); addEventListener('resize', sizeAscii); document.fonts.ready.then(sizeAscii);
   // s = media scale → draw only inside the hover lens
   const lens = { x: 0, y: 0, r: 0, R: 150, hover: false };
   function drawAscii(a, s) {
@@ -311,26 +332,26 @@
     samp.drawImage(vid, sx, sy, sw, sh, 0, 0, cols, rows);
     const px = samp.getImageData(0, 0, cols, rows).data;
     const flick = s ? .04 : .02 + Math.sin(a * Math.PI) * .35; // more glitch mid-transition
-    let y0 = 0, y1 = rows, lx, ly, lr;
-    actx.clearRect(0, 0, AW, AH);
-    actx.save();
+    let x0 = 0, x1 = cols, y0 = 0, y1 = rows, lx, ly, lr, L = lutSolid;
     if (s) {
       const fr = frame.getBoundingClientRect();
-      lx = (lens.x - fr.left - AW / 2) / s + AW / 2; ly = (lens.y - fr.top - AH / 2) / s + AH / 2; lr = lens.r / s;
-      actx.beginPath(); actx.arc(lx, ly, lr, 0, 7); actx.clip();
-      y0 = Math.max(0, (ly - lr) / fs | 0); y1 = Math.min(rows, Math.ceil((ly + lr) / fs));
-    }
-    actx.fillStyle = s ? 'rgba(14,14,16,.7)' : '#0e0e10'; actx.fillRect(0, 0, AW, AH);
-    actx.font = `${fs}px "JetBrains Mono", monospace`; actx.textBaseline = 'top'; actx.fillStyle = '#d6b273';
-    for (let y = y0; y < y1; y++) {
-      let line = '';
-      for (let x = 0; x < cols; x++) {
-        const i = (y * cols + x) * 4, b = (px[i] * .299 + px[i + 1] * .587 + px[i + 2] * .114) / 255;
-        line += Math.random() < flick ? ramp[Math.random() * ramp.length | 0] : ramp[b * (ramp.length - 1) | 0];
+      lx = ((lens.x - fr.left - AW / 2) / s + AW / 2) * D; ly = ((lens.y - fr.top - AH / 2) / s + AH / 2) * D; lr = lens.r / s * D;
+      x0 = clamp((lx - lr) / cw | 0, 0, cols); x1 = clamp(Math.ceil((lx + lr) / cw), 0, cols);
+      y0 = clamp((ly - lr) / ch | 0, 0, rows); y1 = clamp(Math.ceil((ly + lr) / ch), 0, rows);
+      L = lutLens; buf.fill(0);
+    } else buf.fill(L[0]);
+    for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) {
+      const o = y * ch * PW + x * cw;
+      if (s) {
+        const dx = x * cw + cw / 2 - lx, dy = y * ch + ch / 2 - ly;
+        if (dx * dx + dy * dy > lr * lr) continue;
+        for (let j = 0; j < ch; j++) buf.fill(L[0], o + j * PW, o + j * PW + cw);
       }
-      actx.fillText(line, 0, y * fs);
+      const i = (y * cols + x) * 4, b = (px[i] * .299 + px[i + 1] * .587 + px[i + 2] * .114) / 255;
+      const m = masks[Math.random() < flick ? Math.random() * N | 0 : b * (N - 1) | 0];
+      for (let j = 0; j < m.length; j += 2) buf[o + m[j]] = L[m[j + 1]];
     }
-    actx.restore();
+    actx.putImageData(img, 0, 0);
     if (s) { actx.strokeStyle = 'rgba(214,178,115,.6)'; actx.beginPath(); actx.arc(lx, ly, lr, 0, 7); actx.stroke(); }
   }
   if (fine && !reduce) {
@@ -389,7 +410,7 @@
     if (ready && vid.duration) {
       // ease toward target time so scrubbing feels smooth
       shown += (p * (vid.duration - .05) - shown) * .2;
-      if (Math.abs(vid.currentTime - shown) > .02) vid.currentTime = shown;
+      if (!vid.seeking && Math.abs(vid.currentTime - shown) > .04) vid.currentTime = shown; // one seek at a time, ≥1 frame apart
     }
 
     const r = about.getBoundingClientRect();
