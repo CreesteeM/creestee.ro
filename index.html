@@ -290,14 +290,14 @@
 
     <div class="grid">
       <div class="cell" style="--d:0s"><span class="mono n">01</span><h3>Software</h3><p>Aplicații, scripturi și site-uri. Îmi place să construiesc de la zero și să văd ideea prinzând viață.</p></div>
-      <div class="cell" style="--d:.1s"><span class="mono n">02</span><h3>Automatizări</h3><p>Smart home și tot ce poate face computerul în locul meu. Dacă repet ceva de două ori, îl automatizez.</p></div>
+      <div class="cell" style="--d:.1s"><span class="mono n">02</span><h3>Smart home</h3><p>Case inteligente cu Home Assistant: integrez orice dispozitiv, indiferent de brand, și îl fac să lucreze singur. Dacă repet ceva de două ori, îl automatizez.</p></div>
       <div class="cell" style="--d:.2s"><span class="mono n">03</span><h3>AI &amp; gadgeturi</h3><p>Testez tot ce apare nou — de la inteligență artificială la hardware — și povestesc ce merită.</p></div>
       <div class="cell" style="--d:.3s"><span class="mono n">04</span><h3>Car coding</h3><p>Cod pentru mașini: diagnoză, configurări și proiecte proprii — de la sisteme pentru hibride la descuiere din cod.</p></div>
     </div>
 
     <div class="ticker" aria-hidden="true"><div>
-      <span>Programare</span><span>·</span><span>Inteligență artificială</span><span>·</span><span>Smart home</span><span>·</span><span>Aplicații mobile</span><span>·</span><span>Car coding</span><span>·</span><span>Hardware</span><span>·</span><span>Web</span><span>·</span>
-      <span>Programare</span><span>·</span><span>Inteligență artificială</span><span>·</span><span>Smart home</span><span>·</span><span>Aplicații mobile</span><span>·</span><span>Car coding</span><span>·</span><span>Hardware</span><span>·</span><span>Web</span><span>·</span>
+      <span>Programare</span><span>·</span><span>Inteligență artificială</span><span>·</span><span>Home Assistant</span><span>·</span><span>Aplicații mobile</span><span>·</span><span>Car coding</span><span>·</span><span>Hardware</span><span>·</span><span>Web</span><span>·</span>
+      <span>Programare</span><span>·</span><span>Inteligență artificială</span><span>·</span><span>Home Assistant</span><span>·</span><span>Aplicații mobile</span><span>·</span><span>Car coding</span><span>·</span><span>Hardware</span><span>·</span><span>Web</span><span>·</span>
     </div></div>
   </section>
 
@@ -615,7 +615,7 @@
     help: () => out('comenzi: whoami, about, skills, socials, contact, ls, cat, cd, date, echo, clear'),
     whoami: () => out('cristian mihailescu'),
     about: () => out('pasionat de IT — cod, automatizări, AI, car coding și gadgeturi.'),
-    skills: () => out('software · automatizări · ai · car coding · smart home · web'),
+    skills: () => out('software · home assistant · ai · car coding · automatizări · web'),
     socials: () => socials.forEach(([n, u]) => out(link(n + ' ↗', u))),
     contact: () => { out(link(email + ' ✉', 'mailto:' + email)); out(link('sau pe instagram ↗', socials[0][1])); },
     ls: () => out('despre/  linkuri/  pasiuni.txt  despre.txt  contact.txt'),
