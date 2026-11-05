@@ -48,6 +48,7 @@
   header .mono { color: var(--fg); }
   header nav { display: flex; gap: 20px; }
   header nav a:hover { color: var(--gold); }
+  @media (max-width: 480px) { #clock { display: none; } header nav { gap: 14px; } }
 
   /* ---------- scroll story ---------- */
   .story { position: relative; height: 420vh; }
@@ -167,6 +168,78 @@
   .ticker span:nth-child(3n) { color: var(--fg); }
   @keyframes tick { to { transform: translateX(-50%); } }
 
+  /* ---------- projects: pinned horizontal gallery (desktop), swipe (mobile) ---------- */
+  .projects { position: relative; }
+  .proj-head { max-width: 1120px; margin: 0 auto; padding: 0 var(--pad); }
+  .proj-head h2 { font-size: clamp(36px, 6vw, 80px); font-weight: 600; letter-spacing: -.045em; line-height: .95; }
+  .proj-head h2 em { font-style: normal; font-weight: 300; color: var(--gold); }
+  .track { display: flex; gap: 28px; padding: 0 var(--pad); }
+  .card {
+    position: relative; flex: 0 0 min(540px, 84vw); height: min(600px, 62svh); display: flex; flex-direction: column;
+    background: #141417; border: 1px solid var(--line); border-radius: 24px; overflow: hidden;
+    transition: border-color .4s, translate .5s var(--ease);
+  }
+  .card:hover { border-color: rgba(214,178,115,.35); translate: 0 -6px; }
+  .card-top { display: flex; justify-content: space-between; align-items: center; padding: 18px 22px 0; }
+  .badge { padding: 4px 10px; border-radius: 99px; border: 1px solid var(--line); }
+  .badge.live { color: #5ee08a; border-color: rgba(94,224,138,.35); }
+  .badge.live::before { content: "● "; }
+  .card-vis { position: relative; flex: 1; min-height: 0; display: grid; place-items: center; padding: 18px; overflow: hidden; }
+  .card-vis::before { content: ""; position: absolute; inset: 0; background: radial-gradient(60% 60% at 50% 60%, var(--glow, rgba(214,178,115,.14)), transparent 70%); }
+  .phone {
+    position: relative; height: 100%; aspect-ratio: 1206 / 2622; border-radius: 9% / 4.2%; overflow: hidden;
+    border: 5px solid #26262b; box-shadow: 0 30px 60px -20px rgba(0,0,0,.8); background: #000;
+    rotate: var(--rot, -4deg); transition: rotate .6s var(--ease), scale .6s var(--ease);
+  }
+  .card:hover .phone { rotate: 0deg; scale: 1.04; }
+  .phone img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+  .card-txt { padding: 0 22px 22px; }
+  .card-txt h3 { font-size: clamp(26px, 3vw, 34px); font-weight: 600; letter-spacing: -.03em; display: flex; align-items: center; gap: 10px; }
+  .card-txt h3 a { color: var(--gold); font-size: .6em; font-weight: 400; transition: translate .3s var(--ease); }
+  .card-txt h3 a:hover { translate: 3px -3px; }
+  .card-txt p { margin-top: 8px; color: var(--dim); line-height: 1.5; font-size: 15px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  .tags span { font: 10px "JetBrains Mono", monospace; letter-spacing: .06em; text-transform: uppercase; color: var(--fg); padding: 5px 9px; border-radius: 6px; background: rgba(236,235,230,.06); }
+  /* smart home illustration */
+  .home-svg { width: min(100%, 360px); height: auto; overflow: visible; }
+  .home-svg .wire { stroke: rgba(214,178,115,.45); stroke-dasharray: 4 6; animation: flow 1.6s linear infinite; }
+  .home-svg .node { fill: #1c1c21; stroke: rgba(236,235,230,.25); }
+  .home-svg .dot { fill: var(--gold); animation: pulse 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  .home-svg text { font: 9px "JetBrains Mono", monospace; fill: var(--dim); letter-spacing: .08em; text-transform: uppercase; }
+  .home-svg .hub { fill: rgba(214,178,115,.12); stroke: var(--gold); }
+  @keyframes flow { to { stroke-dashoffset: -20; } }
+  @keyframes pulse { 50% { scale: 1.6; opacity: .5; } }
+  /* "you are here" card */
+  .here { position: relative; width: 100%; height: 100%; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); }
+  .here img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) contrast(1.1) brightness(.55) sepia(.5); }
+  .here::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(transparent 0 3px, rgba(14,14,16,.5) 3px 4px); }
+  .here span { position: absolute; z-index: 1; left: 16px; bottom: 14px; color: var(--gold); }
+  .here span::after { content: "_"; animation: blink 1s steps(1) infinite; }
+  .proj-progress { width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 var(--pad); display: flex; align-items: center; gap: 14px; }
+  .proj-progress div { flex: 1; height: 1px; background: var(--line); position: relative; }
+  .proj-progress i { position: absolute; inset: 0; background: var(--gold); transform-origin: left; transform: scaleX(var(--pp, 0)); }
+  @media (min-width: 821px) {
+    .projects { height: 360vh; }
+    .proj-stage { position: sticky; top: 0; height: 100svh; display: flex; flex-direction: column; justify-content: center; gap: 28px; padding-top: 56px; overflow: hidden; }
+    .track { width: max-content; transform: translateX(var(--tx, 0px)); will-change: transform; }
+  }
+  @media (max-width: 820px) {
+    .projects { padding-top: 14vh; }
+    .proj-stage { display: flex; flex-direction: column; gap: 28px; }
+    .track { overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding-bottom: 6px; }
+    .track::-webkit-scrollbar { display: none; }
+    .card { scroll-snap-align: center; height: 560px; }
+  }
+  /* clients */
+  .clients { max-width: 1120px; margin: 0 auto; padding: 12vh var(--pad) 0; }
+  .client { display: grid; grid-template-columns: 1fr auto; gap: 6px 24px; align-items: baseline; padding: 22px 4px; border-bottom: 1px solid var(--line); }
+  .client:first-of-type { border-top: 1px solid var(--line); }
+  .client h4 { font-size: clamp(22px, 2.6vw, 30px); font-weight: 400; letter-spacing: -.02em; }
+  .client p { grid-column: 1; color: var(--dim); font-size: 15px; }
+  .client .meta { grid-row: 1 / 3; grid-column: 2; align-self: center; text-align: right; }
+  .client a.meta { color: var(--gold); }
+  .client a.meta:hover { text-decoration: underline; text-underline-offset: 4px; }
+
   /* ---------- links ---------- */
   .links-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; margin-bottom: 48px; }
   .links-head { font-size: clamp(36px, 6vw, 80px); font-weight: 600; letter-spacing: -.045em; line-height: .95; }
@@ -233,7 +306,7 @@
 
   <header>
     <a class="mono" href="#">CM — creestee</a>
-    <nav class="mono"><a href="#despre">Despre</a><a href="#linkuri">Linkuri</a><span id="clock"></span></nav>
+    <nav class="mono"><a href="#despre">Despre</a><a href="#proiecte">Proiecte</a><a href="#linkuri">Linkuri</a><span id="clock"></span></nav>
   </header>
 
   <!-- scroll-driven video story -->
@@ -299,6 +372,75 @@
       <span>Programare</span><span>·</span><span>Inteligență artificială</span><span>·</span><span>Home Assistant</span><span>·</span><span>Aplicații mobile</span><span>·</span><span>Car coding</span><span>·</span><span>Hardware</span><span>·</span><span>Web</span><span>·</span>
       <span>Programare</span><span>·</span><span>Inteligență artificială</span><span>·</span><span>Home Assistant</span><span>·</span><span>Aplicații mobile</span><span>·</span><span>Car coding</span><span>·</span><span>Hardware</span><span>·</span><span>Web</span><span>·</span>
     </div></div>
+  </section>
+
+  <!-- projects -->
+  <section class="projects" id="proiecte">
+    <div class="proj-stage" id="projStage">
+      <div class="proj-head">
+        <div class="label mono"><span>Proiecte</span><span>(04)</span></div>
+        <h2>Lucruri pe care <em>le-am construit.</em></h2>
+      </div>
+      <div class="track" id="track">
+        <article class="card" style="--glow: rgba(60,170,200,.2)">
+          <div class="card-top mono"><span>01</span><span class="badge live">Live</span></div>
+          <div class="card-vis"><div class="phone"><img src="assets/hyto.jpg" alt="Ecranul principal Hyto: viteză, flux de energie și baterie" loading="lazy"></div></div>
+          <div class="card-txt">
+            <h3>Hyto <a href="https://hyto.cristi.app" target="_blank" rel="noopener" aria-label="Site Hyto">↗</a></h3>
+            <p>Telemetrie pentru Toyota și Lexus hibride, direct pe iPhone: bateria de înaltă tensiune, motoarele electrice, frâna regenerativă, plus un test ghidat al bateriei și coduri de eroare explicate în română.</p>
+            <div class="tags"><span>Swift</span><span>SwiftUI</span><span>Bluetooth LE</span><span>OBD · CAN</span></div>
+          </div>
+        </article>
+        <article class="card" style="--rot: 4deg">
+          <div class="card-top mono"><span>02</span><span class="badge">Personal</span></div>
+          <div class="card-vis"><div class="phone"><img src="assets/chr-key.jpg" alt="Aplicația C-HR Key: încuie, descuie și Mod Tesla" loading="lazy"></div></div>
+          <div class="card-txt">
+            <h3>C-HR Key</h3>
+            <p>Telefonul devine cheia mașinii: încuie și descuie prin Bluetooth, iar în „Mod Tesla” mașina se descuie singură când mă apropii. Widget pe ecranul principal, semnal și baterie 12 V.</p>
+            <div class="tags"><span>Swift</span><span>Bluetooth LE</span><span>Widgets</span><span>App Intents</span></div>
+          </div>
+        </article>
+        <article class="card" style="--glow: rgba(120,200,140,.14)">
+          <div class="card-top mono"><span>03</span><span class="badge">Acasă</span></div>
+          <div class="card-vis">
+            <svg class="home-svg" viewBox="0 0 320 260" aria-hidden="true">
+              <path d="M40 120 160 30l120 90v110H40z" fill="none" stroke="rgba(236,235,230,.18)" stroke-width="1.5"/>
+              <g fill="none" stroke-width="1.2">
+                <path class="wire" d="M160 150 85 95"/><path class="wire" d="M160 150 235 95"/>
+                <path class="wire" d="M160 150 75 195"/><path class="wire" d="M160 150 245 195"/><path class="wire" d="M160 150 160 70"/>
+              </g>
+              <circle class="hub" cx="160" cy="150" r="26"/><text x="160" y="153" text-anchor="middle" style="fill:var(--gold)">HA</text>
+              <g><circle class="node" cx="85" cy="95" r="14"/><circle class="dot" cx="85" cy="95" r="3"/><text x="85" y="122" text-anchor="middle">lumini</text></g>
+              <g><circle class="node" cx="235" cy="95" r="14"/><circle class="dot" cx="235" cy="95" r="3" style="animation-delay:-.6s"/><text x="235" y="122" text-anchor="middle">climă</text></g>
+              <g><circle class="node" cx="75" cy="195" r="14"/><circle class="dot" cx="75" cy="195" r="3" style="animation-delay:-1.2s"/><text x="75" y="222" text-anchor="middle">senzori</text></g>
+              <g><circle class="node" cx="245" cy="195" r="14"/><circle class="dot" cx="245" cy="195" r="3" style="animation-delay:-1.8s"/><text x="245" y="222" text-anchor="middle">camere</text></g>
+              <g><circle class="node" cx="160" cy="70" r="14"/><circle class="dot" cx="160" cy="70" r="3" style="animation-delay:-.3s"/><text x="160" y="50" text-anchor="middle">încuietori</text></g>
+            </svg>
+          </div>
+          <div class="card-txt">
+            <h3>Smart Home</h3>
+            <p>Integrez orice dispozitiv, indiferent de brand — lumini, climă, senzori, camere, încuietori — într-un singur sistem care rulează local și se automatizează singur.</p>
+            <div class="tags"><span>Home Assistant</span><span>Automatizări</span><span>YAML</span><span>Integrări custom</span></div>
+          </div>
+        </article>
+        <article class="card">
+          <div class="card-top mono"><span>04</span><span class="badge">Ești aici</span></div>
+          <div class="card-vis"><div class="here"><img src="assets/me.jpg" alt="" loading="lazy"><span class="mono">creestee.ro</span></div></div>
+          <div class="card-txt">
+            <h3>creestee.ro</h3>
+            <p>Video controlat de scroll, ASCII randat în timp real, un terminal în care poți scrie și linkuri care se criptează. Fără framework-uri — un singur fișier.</p>
+            <div class="tags"><span>HTML</span><span>CSS</span><span>JavaScript</span><span>Canvas</span></div>
+          </div>
+        </article>
+      </div>
+      <div class="proj-progress mono"><span id="projN">01</span><div><i id="projBar"></i></div><span>04</span></div>
+    </div>
+  </section>
+
+  <section class="clients" aria-labelledby="clientsTitle">
+    <div class="label mono"><span id="clientsTitle">Pentru clienți</span><span>(02)</span></div>
+    <div class="client"><h4>MASIV</h4><p>Site pentru mese din lemn masiv, cu configurator 3D în timp real.</p><span class="meta mono">React · Three.js</span></div>
+    <div class="client"><h4>PlayKid</h4><p>Magazin online pentru locuri de joacă din lemn, fabricate în România.</p><a class="meta mono" href="https://playkid.ro" target="_blank" rel="noopener">playkid.ro ↗</a></div>
   </section>
 
   <!-- links -->
@@ -509,6 +651,22 @@
     });
   }
 
+  // ---- projects: vertical scroll drives the horizontal track (desktop); swipe on mobile ----
+  const projects = document.getElementById('proiecte'), track = document.getElementById('track');
+  const projBar = document.getElementById('projBar'), projN = document.getElementById('projN');
+  const wide = matchMedia('(min-width: 821px)');
+  function drawProjects() {
+    let pp;
+    if (wide.matches) {
+      const r = projects.getBoundingClientRect();
+      pp = clamp(-r.top / (projects.offsetHeight - innerHeight));
+      const max = track.scrollWidth - innerWidth;
+      track.style.setProperty('--tx', -pp * max + 'px');
+    } else pp = clamp(track.scrollLeft / (track.scrollWidth - track.clientWidth || 1));
+    projBar.style.setProperty('--pp', pp);
+    projN.textContent = String(Math.min(4, 1 + Math.round(pp * 3))).padStart(2, '0');
+  }
+
   function frameLoop() {
     const total = story.offsetHeight - innerHeight;
     const p = clamp(-story.getBoundingClientRect().top / total);
@@ -546,6 +704,7 @@
     }
 
     drawDiff();
+    drawProjects();
 
     requestAnimationFrame(frameLoop);
   }
@@ -612,15 +771,16 @@
   };
   const go = id => smoothTo(document.getElementById(id).getBoundingClientRect().top + scrollY);
   const cmds = {
-    help: () => out('comenzi: whoami, about, skills, socials, contact, ls, cat, cd, date, echo, clear'),
+    help: () => out('comenzi: whoami, about, skills, proiecte, socials, contact, ls, cat, cd, date, echo, clear'),
     whoami: () => out('cristian mihailescu'),
     about: () => out('pasionat de IT — cod, automatizări, AI, car coding și gadgeturi.'),
     skills: () => out('software · home assistant · ai · car coding · automatizări · web'),
     socials: () => socials.forEach(([n, u]) => out(link(n + ' ↗', u))),
     contact: () => { out(link(email + ' ✉', 'mailto:' + email)); out(link('sau pe instagram ↗', socials[0][1])); },
-    ls: () => out('despre/  linkuri/  pasiuni.txt  despre.txt  contact.txt'),
+    ls: () => out('despre/  proiecte/  linkuri/  pasiuni.txt  despre.txt  contact.txt'),
+    proiecte: () => { out('hyto · c-hr key · smart home · creestee.ro'); go('proiecte'); },
     cat: f => f === 'pasiuni.txt' ? cmds.skills() : f === 'despre.txt' ? cmds.about() : f === 'contact.txt' ? cmds.contact() : out(`cat: ${f || '?'}: fișier inexistent`, 'err'),
-    cd: d => /^despre/.test(d) ? (go('despre'), out('→ despre/')) : /^linkuri/.test(d) ? (go('linkuri'), out('→ linkuri/')) : out(`cd: ${d || '~'}: nu există`, 'err'),
+    cd: d => /^despre/.test(d) ? (go('despre'), out('→ despre/')) : /^linkuri/.test(d) ? (go('linkuri'), out('→ linkuri/')) : /^proiecte/.test(d) ? (go('proiecte'), out('→ proiecte/')) : out(`cd: ${d || '~'}: nu există`, 'err'),
     date: () => out(new Date().toLocaleString('ro-RO', { timeZone: 'Europe/Bucharest' })),
     echo: t => out(t),
     clear: () => { tout.querySelectorAll('.ul').forEach(n => n.remove()); term.classList.add('cleared'); },
